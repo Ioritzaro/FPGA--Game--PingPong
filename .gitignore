@@ -1,0 +1,9 @@
+proj/*
+hw_handoff/*
+repo/*
+sdk/*
+src/bd/*
+src/ip/*
+src/others/*
+*.xpr
+*.zip
