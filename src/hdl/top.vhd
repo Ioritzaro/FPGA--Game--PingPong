@@ -232,23 +232,23 @@ clk_div_inst : clk_wiz_0
               -- (others=>'1')           when (active = '1' and ((not(h_cntr_reg < 512) and (v_cntr_reg(8) = '1' and h_cntr_reg(3) = '1')) or
                                             -- (not(h_cntr_reg < 512) and (v_cntr_reg(8) = '0' and v_cntr_reg(3) = '1')))) else
               -- (others=>'0');
-  vga_red <=  (others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-			  (others=>'0')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
-			  (others=>'0')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-			  (others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
-              (others=>'0');  
+  vga_red <=  ---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
+			  ("0000")         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
+			  ("0000")         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
+			  ("0011")              when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
+              (others=>'1');  
                 
-  vga_blue <= (others=>'0')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-			  (others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
-			  (others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-			  (others=>'1')          when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
-              (others=>'0');  
+  vga_blue <= ---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
+			  ("0000")         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
+			  ("0000")         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
+			  ("0011")              when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
+              (others=>'1');  
               
-  vga_green <=(others=>'0')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-			  (others=>'0')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else 
-			  (others=>'0')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-			  (others=>'1')           when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else 
-              (others=>'0');
+  vga_green <=---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
+			  ("1111")         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else 
+			  ("1111")         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
+			  ("0011")              when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else 
+              (others=>'1');
               
  
  ------------------------------------------------------
@@ -258,7 +258,7 @@ clk_div_inst : clk_wiz_0
   process (pxl_clk)
   begin
     if (rising_edge(pxl_clk)) then
-      if (update_box = '1') then
+      if (update_box = '1' and game_over = '0') then
         if (box_x_dir = '1') then
           box_x_reg <= box_x_reg + 2;
         else
@@ -269,6 +269,9 @@ clk_div_inst : clk_wiz_0
         else
           box_y_reg <= box_y_reg - 2;
         end if;
+	  elsif (update_box = '1' and game_over = '1') then
+		box_x_reg <=  BOX_X_INIT;
+		box_y_reg <=  BOX_Y_INIT;
       end if;
     end if;
   end process;
@@ -280,12 +283,13 @@ clk_div_inst : clk_wiz_0
         if ((box_x_dir = '1' and (box_x_reg > BOX_X_MAX - 1)) or (box_x_dir = '0' and (box_x_reg < BOX_X_MIN + 5))) then
           box_x_dir <= not(box_x_dir);
         end if;
-        --if ((box_y_dir = '1' and (box_y_reg > BOX_Y_MAX - 1)) or (box_y_dir = '0' and (box_y_reg < BOX_Y_MIN + 5))) then
-		if ((box_y_dir = '1' and (box_y_reg > PAD_BOT_Y_MAX - 1) and (box_x_reg >= bot_pad_x_reg) and (box_x_reg <= bot_pad_x_reg + PAD_WIDTH)) or (box_y_dir = '0' and (box_y_reg <= PAD_TOP_Y_MIN + 5) and (box_x_reg >= bot_pad_x_reg) and (box_x_reg <= bot_pad_x_reg + PAD_WIDTH))) then
+		if (((box_y_dir = '1') and (box_y_reg > PAD_BOT_Y_MAX - 1) and (box_x_reg >= bot_pad_x_reg) and (box_x_reg <= bot_pad_x_reg + PAD_WIDTH)) or
+		   ((box_y_dir = '0') and (box_y_reg <= PAD_TOP_Y_MIN + 5) and (box_x_reg >= top_pad_x_reg) and (box_x_reg <= top_pad_x_reg + PAD_WIDTH))) then
           box_y_dir <= not(box_y_dir);
+		elsif(sw(0) = '1') then			
 		  game_over <= '0';
-		else
-		  --game_over <= '1';
+		elsif ((box_y_dir = '1' and (box_y_reg > BOX_Y_MAX - 1)) or (box_y_dir = '0' and (box_y_reg < BOX_Y_MIN + 5))) then
+		  game_over <= '1';
         end if;
       end if;
     end if;
@@ -302,7 +306,7 @@ clk_div_inst : clk_wiz_0
     end if;
   end process;
   
-  update_box <= '1' when box_cntr_reg = (BOX_CLK_DIV - 1) else
+  update_box <= '1' when (box_cntr_reg = (BOX_CLK_DIV - 1)) else
                 '0';
                 
   pixel_in_box <= '1' when (((h_cntr_reg >= box_x_reg) and (h_cntr_reg < (box_x_reg + BOX_WIDTH))) and
@@ -346,10 +350,16 @@ clk_div_inst : clk_wiz_0
 	process (pxl_clk)
 	begin
     if (rising_edge(pxl_clk)) then
-      if (update_pad = '1') then
+      if (update_pad = '1' and sw(1) = '1') then
         if ((bot_Move_Right = '1') and (bot_pad_x_reg < BOX_X_MAX - 150)) then
           bot_pad_x_reg <= bot_pad_x_reg + 1;
         elsif ((bot_Move_Right = '0') and (bot_pad_x_reg > BOX_X_MIN + 5)) then
+          bot_pad_x_reg <= bot_pad_x_reg - 1;
+        end if;
+	  elsif (update_pad = '1' and sw(1) = '0') then
+	    if ((bot_push_button_sig = '1') and (bot_pad_x_reg < BOX_X_MAX - 150)) then
+          bot_pad_x_reg <= bot_pad_x_reg + 1;
+        elsif ((bot_push_button_sig2 = '1') and (bot_pad_x_reg > BOX_X_MIN + 5)) then
           bot_pad_x_reg <= bot_pad_x_reg - 1;
         end if;
       end if;
@@ -380,10 +390,16 @@ clk_div_inst : clk_wiz_0
 	process (pxl_clk)
 	begin
     if (rising_edge(pxl_clk)) then
-      if (update_pad = '1') then
+      if (update_pad = '1' and sw(1) = '1') then
         if ((top_Move_Right = '1') and (top_pad_x_reg < BOX_X_MAX - 150)) then
           top_pad_x_reg <= top_pad_x_reg + 1;
         elsif ((top_Move_Right = '0') and (top_pad_x_reg > BOX_X_MIN + 5)) then
+          top_pad_x_reg <= top_pad_x_reg - 1;
+        end if;
+	  elsif (update_pad = '1' and sw(1) = '0') then
+	    if ((top_push_button_sig = '1') and (top_pad_x_reg < BOX_X_MAX - 150)) then
+          top_pad_x_reg <= top_pad_x_reg + 1;
+        elsif ((top_push_button_sig2 = '1') and (top_pad_x_reg > BOX_X_MIN + 5)) then
           top_pad_x_reg <= top_pad_x_reg - 1;
         end if;
       end if;
