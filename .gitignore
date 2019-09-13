@@ -7,3 +7,4 @@ src/ip/*
 src/others/*
 *.xpr
 *.zip
+*.keep
