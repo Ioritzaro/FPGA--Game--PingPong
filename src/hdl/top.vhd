@@ -124,6 +124,10 @@ constant V_POL  : std_logic := '1';
 --constant H_POL : std_logic := '1';
 --constant V_POL : std_logic := '1';
 
+-- Color constants
+constant BLACK   : std_logic_vector(3 downto 0) := "0000";
+constant WHITE   : std_logic_vector(3 downto 0) := "1111";
+
 --Moving Box constants
 constant BOX_WIDTH    : natural := 15;
 constant BOX_CLK_DIV  : natural := 1000000; --MAX=(2^25 - 1)
@@ -164,31 +168,32 @@ signal update_box   : std_logic;
 signal pixel_in_box : std_logic;
 
 -- PADS Constants
-constant PAD_WIDTH      : natural := 150;
-constant PAD_HEIGHT     : natural := 15;
+constant PAD_WIDTH      : natural := 15;
+constant PAD_HEIGHT     : natural := 170;
 constant PAD_CLK_DIV    : natural := 500000; --MAX=(2^25 - 1)
-constant PAD_BOT_Y_MAX  : natural := 1000;
+constant PAD_LEFT_X_MIN  : natural := 10;
+constant PAD_RIGHT_X_MIN : natural := 1250;
 constant PAD_TOP_Y_MIN  : natural := 10;
 
 --Pad signals
 signal update_pad   : std_logic;
 signal pad_cntr_reg : std_logic_vector(24 downto 0) := (others =>'0');
 --Botton pad
-signal bot_pixel_in_pad     : std_logic;
-signal bot_right_button	    : std_logic;
-signal bot_right_button_reg	: std_logic;
-signal bot_left_button	    : std_logic;
-signal bot_left_button_reg	: std_logic;
-signal bot_pad_x_reg        : std_logic_vector(11 downto 0) := BOX_X_INIT;
-signal bot_Move_Right       : std_logic := '1';
+signal left_pixel_in_pad          : std_logic;
+signal left_up_button	            : std_logic;
+signal left_up_button_reg	      : std_logic;
+signal left_down_button	        : std_logic;
+signal left_down_button_reg	: std_logic;
+signal left_pad_y_reg             : std_logic_vector(11 downto 0) := BOX_X_INIT;
+signal left_move_up               : std_logic := '1';
 -- Top pad
-signal top_pixel_in_pad     : std_logic;
-signal top_right_button	    : std_logic;
-signal top_right_button_reg	: std_logic;
-signal top_left_button	    : std_logic;
-signal top_left_button_reg	: std_logic;
-signal top_pad_x_reg        : std_logic_vector(11 downto 0) := BOX_X_INIT;
-signal top_Move_Right       : std_logic := '1';
+signal right_pixel_in_pad            : std_logic;
+signal right_up_button	             : std_logic;
+signal right_up_button_reg	       : std_logic;
+signal right_down_button	         : std_logic;
+signal right_down_button_reg	 : std_logic;
+signal right_pad_y_reg              : std_logic_vector(11 downto 0) := BOX_X_INIT;
+signal right_move_up                : std_logic := '1';
 
 -- Game signals
 signal game_over : std_logic := '0';
@@ -208,23 +213,31 @@ port map
   -------         Update RGB values            -------
   ----------------------------------------------------
   vga_red <=  ---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-              ("0000")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
-              ("0000")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-              ("0011")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
-              (others=>'1');  
+              -- WHITE      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
+              -- WHITE      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
+              -- ("0011")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(bot_pixel_in_pad = '1') and not(top_pixel_in_pad = '1'))) else
+              -- (others=>'1');
+              (others=>'1') when (active = '1' and (((h_cntr_reg > 10) and (h_cntr_reg < 1270) and (v_cntr_reg >= 5) and (v_cntr_reg <= 7)))) else
+              ("1010")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
+              ("0000");
                 
   vga_blue <= ---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-              ("0000")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
-              ("0000")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-              ("0011")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
-              (others=>'1');  
+              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
+              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
+              -- ("0011")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
+              -- (others=>'1');
+              (others=>'1') when (active = '1' and (((h_cntr_reg > 10) and (h_cntr_reg < 1270) and (v_cntr_reg >= 5) and (v_cntr_reg <= 7)))) else
+              ("1101")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
+              ("0000");
               
   vga_green <=---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-              ("1111")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else 
-              ("1111")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-              ("0011")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else 
-              (others=>'1');
-              
+              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else 
+              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
+              -- ("0011")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else 
+              -- (others=>'1');
+              (others=>'1') when (active = '1' and (((h_cntr_reg > 10) and (h_cntr_reg < 1270) and (v_cntr_reg >= 5) and (v_cntr_reg <= 7)))) else
+              ("1110")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
+              ("0000");
  
  ------------------------------------------------------
  -------         MOVING BOX LOGIC                ------
@@ -250,27 +263,27 @@ port map
       end if;
     end if;
   end process;
-  -- Bounce ball if pad collision or stop if screen edge    
+  --Bounce ball if pad collision or stop if screen edge
   process (pxl_clk)
   begin
     if (rising_edge(pxl_clk)) then
       if (update_box = '1') then
-        if ((box_x_dir = '1' and (box_x_reg > BOX_X_MAX - 1)) or 
-            (box_x_dir = '0' and (box_x_reg < BOX_X_MIN + 5))) then
+        if (((box_x_dir = '1') and (box_x_reg > PAD_RIGHT_X_MIN - 1) and (box_y_reg >= right_pad_y_reg) and (box_y_reg <= right_pad_y_reg + PAD_HEIGHT)) or 
+            (box_x_dir = '0' and (box_x_reg < PAD_LEFT_X_MIN + 5) and (box_y_reg >= left_pad_y_reg) and (box_y_reg <= left_pad_y_reg + PAD_HEIGHT))) then
               box_x_dir <= not(box_x_dir);
-        end if;
-        if (((box_y_dir = '1') and (box_y_reg > PAD_BOT_Y_MAX - 1) and (box_x_reg >= bot_pad_x_reg) and (box_x_reg <= bot_pad_x_reg + PAD_WIDTH)) or
-            ((box_y_dir = '0') and (box_y_reg <= PAD_TOP_Y_MIN + 5) and (box_x_reg >= top_pad_x_reg) and (box_x_reg <= top_pad_x_reg + PAD_WIDTH))) then
-              box_y_dir <= not(box_y_dir);
-        elsif ((box_y_dir = '1' and (box_y_reg > BOX_Y_MAX - 1)) or (box_y_dir = '0' and (box_y_reg < BOX_Y_MIN + 5))) then
-          game_over <= '1';
+         elsif((box_x_dir = '1' and (box_x_reg > PAD_RIGHT_X_MIN - 1)) or (box_x_dir = '0' and (box_x_reg < PAD_LEFT_X_MIN + 5))) then
+            game_over <= '1';
         elsif(sw(0) = '1') then			
-          game_over <= '0';
+            game_over <= '0';
+        end if;
+        if (((box_y_dir = '1') and (box_y_reg > BOX_Y_MAX - 1) ) or
+            ((box_y_dir = '0') and (box_y_reg <= BOX_Y_MIN + 5))) then
+              box_y_dir <= not(box_y_dir);
         end if;
       end if;
     end if;
   end process;
-  -- Update ball
+  --Update ball
   process (pxl_clk)
   begin
     if (rising_edge(pxl_clk)) then
@@ -312,14 +325,14 @@ port map
 	process(pxl_clk)
 	begin
     if (rising_edge(pxl_clk)) then
-      bot_right_button      <=  btn(0);
-      bot_right_button_reg  <=  bot_right_button;
-      bot_left_button       <=  btn(1);
-      bot_left_button_reg   <=  bot_left_button;
-      if ((bot_right_button_reg = '0') and (bot_right_button = '1')) then  --- Right button rise edge
-        bot_Move_Right <= '1';
-	    elsif ((bot_left_button_reg = '0') and (bot_left_button= '1')) then  --- Left button rise edge
-	      bot_Move_Right <= '0';
+      left_up_button             <=  btn(0);
+      left_up_button_reg      <=  left_up_button;
+      left_down_button        <=  btn(1);
+      left_down_button_reg  <=  left_down_button;
+      if ((left_up_button_reg = '0') and (left_up_button = '1')) then  --- Right button rise edge
+        left_move_up <= '1';
+	    elsif ((left_down_button_reg = '0') and (left_down_button= '1')) then  --- Left button rise edge
+	      left_move_up <= '0';
 		end if;
 	end if;
 	end process;
@@ -329,38 +342,38 @@ port map
     if (rising_edge(pxl_clk)) then
       -- Slide mode
       if ((update_pad = '1') and (sw(1) = '1')) then
-        if ((bot_Move_Right = '1') and (bot_pad_x_reg < BOX_X_MAX - 150)) then
-          bot_pad_x_reg <= bot_pad_x_reg + 1;
-        elsif ((bot_Move_Right = '0') and (bot_pad_x_reg > BOX_X_MIN + 5)) then
-          bot_pad_x_reg <= bot_pad_x_reg - 1;
+        if ((left_move_up = '1') and (left_pad_y_reg < BOX_Y_MAX - (PAD_HEIGHT+15))) then
+          left_pad_y_reg <= left_pad_y_reg + 1;
+        elsif ((left_move_up = '0') and (left_pad_y_reg > BOX_Y_MIN + 15)) then
+          left_pad_y_reg <= left_pad_y_reg - 1;
         end if;
       -- Step mode
       elsif (update_pad = '1' and sw(1) = '0') then
-        if ((bot_right_button = '1') and (bot_pad_x_reg < BOX_X_MAX - 150)) then
-          bot_pad_x_reg <= bot_pad_x_reg + 1;
-        elsif ((bot_left_button = '1') and (bot_pad_x_reg > BOX_X_MIN + 5)) then
-          bot_pad_x_reg <= bot_pad_x_reg - 1;
+        if ((left_up_button = '1') and (left_pad_y_reg < BOX_Y_MAX - (PAD_HEIGHT+15))) then
+          left_pad_y_reg <= left_pad_y_reg + 1;
+        elsif ((left_down_button = '1') and (left_pad_y_reg > BOX_Y_MIN + 15)) then
+          left_pad_y_reg <= left_pad_y_reg - 1;
         end if;
       end if;
     end if;
   end process;  
 				
-  bot_pixel_in_pad <= '1' when  (((h_cntr_reg >= bot_pad_x_reg) and (h_cntr_reg < (bot_pad_x_reg + PAD_WIDTH))) and
-                                 ((v_cntr_reg >= PAD_BOT_Y_MAX) and (v_cntr_reg < (PAD_BOT_Y_MAX + PAD_HEIGHT)))) else
-                      '0';
+  left_pixel_in_pad <= '1' when  (((v_cntr_reg >= left_pad_y_reg) and (v_cntr_reg < (left_pad_y_reg + PAD_HEIGHT))) and
+                                                  ((h_cntr_reg >= PAD_LEFT_X_MIN) and (h_cntr_reg < (PAD_LEFT_X_MIN + PAD_WIDTH)))) else
+                                  '0';
 				  
 		-- TOP PLAYER ----
 	process(pxl_clk)
 	begin
     if (rising_edge(pxl_clk)) then
-      top_right_button      <=  btn(2);
-      top_right_button_reg  <=  top_right_button;
-      top_left_button       <=  btn(3);
-      top_left_button_reg   <=  top_left_button;
-      if  ((top_right_button_reg = '0') and (top_right_button = '1')) then  --- Rise edge
-        top_Move_Right <= '1';
-	    elsif ((top_left_button_reg = '0') and (top_left_button = '1')) then  --- Rise edge
-	        top_Move_Right <= '0';
+      right_up_button                <=  btn(2);
+      right_up_button_reg         <=  right_up_button;
+      right_down_button           <=  btn(3);
+      right_down_button_reg    <=  right_down_button;
+      if  ((right_up_button_reg = '0') and (right_up_button = '1')) then  --- Rise edge
+        right_move_up <= '1';
+	    elsif ((right_down_button_reg = '0') and (right_down_button = '1')) then  --- Rise edge
+	        right_move_up <= '0';
       end if;
     end if;
 	end process;
@@ -370,25 +383,25 @@ port map
     if (rising_edge(pxl_clk)) then
       -- Slide mode
       if (update_pad = '1' and sw(1) = '1') then
-        if ((top_Move_Right = '1') and (top_pad_x_reg < BOX_X_MAX - 150)) then
-          top_pad_x_reg <= top_pad_x_reg + 1;
-        elsif ((top_Move_Right = '0') and (top_pad_x_reg > BOX_X_MIN + 5)) then
-          top_pad_x_reg <= top_pad_x_reg - 1;
+        if ((right_move_up = '1') and (right_pad_y_reg < BOX_Y_MAX - (PAD_HEIGHT+15))) then
+          right_pad_y_reg <= right_pad_y_reg + 1;
+        elsif ((right_move_up = '0') and (right_pad_y_reg > BOX_Y_MIN + 15)) then
+          right_pad_y_reg <= right_pad_y_reg - 1;
         end if;
       -- Step mode
       elsif (update_pad = '1' and sw(1) = '0') then
-        if ((top_right_button = '1') and (top_pad_x_reg < BOX_X_MAX - 150)) then
-          top_pad_x_reg <= top_pad_x_reg + 1;
-        elsif ((top_left_button = '1') and (top_pad_x_reg > BOX_X_MIN + 5)) then
-          top_pad_x_reg <= top_pad_x_reg - 1;
+        if ((right_up_button = '1') and (right_pad_y_reg < BOX_Y_MAX - (PAD_HEIGHT+15))) then
+          right_pad_y_reg <= right_pad_y_reg + 1;
+        elsif ((right_down_button = '1') and (right_pad_y_reg > BOX_Y_MIN + 15)) then
+          right_pad_y_reg <= right_pad_y_reg - 1;
         end if;
       end if;
     end if;
   end process;  
  
-  top_pixel_in_pad <= '1' when (((h_cntr_reg >= top_pad_x_reg) and (h_cntr_reg < (top_pad_x_reg + PAD_WIDTH))) and
-                                ((v_cntr_reg >= PAD_TOP_Y_MIN) and (v_cntr_reg < (PAD_TOP_Y_MIN + PAD_HEIGHT)))) else
-                      '0';			 
+  right_pixel_in_pad <= '1' when (((v_cntr_reg >= right_pad_y_reg) and (v_cntr_reg < (right_pad_y_reg + PAD_HEIGHT))) and
+                                                    ((h_cntr_reg >= PAD_RIGHT_X_MIN) and (h_cntr_reg < (PAD_RIGHT_X_MIN + PAD_WIDTH)))) else
+                                    '0';			 
  
  ------------------------------------------------------
  -------         SYNC GENERATION                 ------
