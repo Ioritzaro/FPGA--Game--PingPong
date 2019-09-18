@@ -13,6 +13,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.all;
+library work;
+use work.constants_package.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -46,102 +48,6 @@ port
  );
 end component;
 
---Sync Generation constants
-
-----***640x480@60Hz***--  Requires 25 MHz clock
---constant FRAME_WIDTH : natural := 640;
---constant FRAME_HEIGHT : natural := 480;
-
---constant H_FP : natural := 16; --H front porch width (pixels)
---constant H_PW : natural := 96; --H sync pulse width (pixels)
---constant H_MAX : natural := 800; --H total period (pixels)
-
---constant V_FP : natural := 10; --V front porch width (lines)
---constant V_PW : natural := 2; --V sync pulse width (lines)
---constant V_MAX : natural := 525; --V total period (lines)
-
---constant H_POL : std_logic := '0';
---constant V_POL : std_logic := '0';
-
-----***800x600@60Hz***--  Requires 40 MHz clock
---constant FRAME_WIDTH : natural := 800;
---constant FRAME_HEIGHT : natural := 600;
---
---constant H_FP : natural := 40; --H front porch width (pixels)
---constant H_PW : natural := 128; --H sync pulse width (pixels)
---constant H_MAX : natural := 1056; --H total period (pixels)
---
---constant V_FP : natural := 1; --V front porch width (lines)
---constant V_PW : natural := 4; --V sync pulse width (lines)
---constant V_MAX : natural := 628; --V total period (lines)
---
---constant H_POL : std_logic := '1';
---constant V_POL : std_logic := '1';
-
-
-----***1280x720@60Hz***-- Requires 74.25 MHz clock
---constant FRAME_WIDTH : natural := 1280;
---constant FRAME_HEIGHT : natural := 720;
---
---constant H_FP : natural := 110; --H front porch width (pixels)
---constant H_PW : natural := 40; --H sync pulse width (pixels)
---constant H_MAX : natural := 1650; --H total period (pixels)
---
---constant V_FP : natural := 5; --V front porch width (lines)
---constant V_PW : natural := 5; --V sync pulse width (lines)
---constant V_MAX : natural := 750; --V total period (lines)
---
---constant H_POL : std_logic := '1';
---constant V_POL : std_logic := '1';
-
---***1280x1024@60Hz***-- Requires 108 MHz clock
-constant FRAME_WIDTH  : natural := 1280;
-constant FRAME_HEIGHT : natural := 1024;
-
-constant H_FP   : natural := 48; --H front porch width (pixels)
-constant H_PW   : natural := 112; --H sync pulse width (pixels)
-constant H_MAX  : natural := 1688; --H total period (pixels)
-
-constant V_FP   : natural := 1; --V front porch width (lines)
-constant V_PW   : natural := 3; --V sync pulse width (lines)
-constant V_MAX  : natural := 1066; --V total period (lines)
-
-constant H_POL  : std_logic := '1';
-constant V_POL  : std_logic := '1';
-
---***1920x1080@60Hz***-- Requires 148.5 MHz pxl_clk
---constant FRAME_WIDTH : natural := 1920;
---constant FRAME_HEIGHT : natural := 1080;
-
---constant H_FP : natural := 88; --H front porch width (pixels)
---constant H_PW : natural := 44; --H sync pulse width (pixels)
---constant H_MAX : natural := 2200; --H total period (pixels)
-
---constant V_FP : natural := 4; --V front porch width (lines)
---constant V_PW : natural := 5; --V sync pulse width (lines)
---constant V_MAX : natural := 1125; --V total period (lines)
-
---constant H_POL : std_logic := '1';
---constant V_POL : std_logic := '1';
-
--- Color constants
-constant BLACK   : std_logic_vector(3 downto 0) := "0000";
-constant WHITE   : std_logic_vector(3 downto 0) := "1111";
-
-constant TOP_MENU : natural := 100;
-constant BOT_MENU : natural := 50;
-constant FRAME_MIDDLE : natural := 640;
-
---Moving Box constants
-constant BOX_WIDTH    : natural := 15;
-constant BOX_CLK_DIV  : natural := 1000000; --MAX=(2^25 - 1)
-constant BOX_X_MAX    : natural := (FRAME_WIDTH - BOX_WIDTH);
-constant BOX_Y_MAX    : natural := (FRAME_HEIGHT - BOX_WIDTH);
-constant BOX_X_MIN    : natural := 0;
-constant BOX_Y_MIN    : natural := 0;
-constant BOX_X_INIT   : std_logic_vector(11 downto 0) := x"019";
-constant BOX_Y_INIT   : std_logic_vector(11 downto 0) := x"200"; --400
-
 signal pxl_clk  : std_logic;
 signal active   : std_logic;
 
@@ -170,18 +76,6 @@ signal box_cntr_reg : std_logic_vector(24 downto 0) := (others =>'0');
 
 signal update_box   : std_logic;
 signal pixel_in_box : std_logic;
-
--- PADS Constants
-constant PAD_GAP                  : natural := 5;
-constant PAD_WIDTH              : natural := 15;
-constant PAD_HEIGHT             : natural := 170;
-constant PAD_CLK_DIV           : natural := 500000; --MAX=(2^25 - 1)
-constant PAD_LEFT_X_MIN     : natural := 10;
-constant PAD_RIGHT_X_MIN  : natural := 1250;
-constant PAD_TOP_Y_MIN      : natural := 10;
-constant PAD_SPEED              : natural := 2;
-constant PAD_TOP_MARGIN    : natural := 100;
-constant PAD_BOT_MARGIN    : natural := 50;
 
 --Pad signals
 signal update_pad   : std_logic;
@@ -220,44 +114,35 @@ port map
   ----------------------------------------------------
   -------         Update RGB values            -------
   ----------------------------------------------------
-  vga_red <=  ---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-              -- WHITE      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
-              -- WHITE      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-              -- ("0011")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(bot_pixel_in_pad = '1') and not(top_pixel_in_pad = '1'))) else
-              -- (others=>'1');
-              (others=>'1') when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= (TOP_MENU - PAD_GAP))) or 
-                                                                         ((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg >= (FRAME_HEIGHT - BOT_MENU +PAD_GAP))))) else
-              (others=>'1') when (active = '1' and (((h_cntr_reg  < PAD_LEFT_X_MIN - PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT))) or 
-                                                                         ((h_cntr_reg  > PAD_RIGHT_X_MIN + PAD_WIDTH + PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT ))))) else
-              (others=>'1') when (active = '1' and (((h_cntr_reg  > (FRAME_MIDDLE - PAD_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + PAD_GAP)) and (v_cntr_reg(5) <= '0')))) else
-              ("0000")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
-              ("0000");
+  vga_red <=   (others=> '0')  when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
+                                                                                     (((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg > FRAME_HEIGHT - BLACK_FRAME_BOT - BLACK_FRAME_WIDTH) and (v_cntr_reg < (FRAME_HEIGHT - BLACK_FRAME_BOT))))))  else  
+                       (others=>'1')    when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= TOP_MENU )) or 
+                                                                                   ((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg >= (FRAME_HEIGHT - BOT_MENU))))) else
+                       (others=>'1')    when (active = '1' and (((h_cntr_reg  < PAD_LEFT_X_MIN - PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT))) or 
+                                                                                  ((h_cntr_reg  > PAD_RIGHT_X_MIN + PAD_WIDTH + PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT ))))) else
+                       (others=>'1')    when (active = '1' and (((h_cntr_reg  > (FRAME_MIDDLE - PAD_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + PAD_GAP)) and (v_cntr_reg(5) <= '0')))) else
+                       ("0000")            when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
+                       ("0000");
                 
-  vga_blue <= ---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else
-              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-              -- ("0011")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else
-              -- (others=>'1');
-              (others=>'1') when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= (TOP_MENU - PAD_GAP))) or 
-                                                                         ((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg >= (FRAME_HEIGHT - BOT_MENU +PAD_GAP))))) else
-              (others=>'1') when (active = '1' and (((h_cntr_reg  < PAD_LEFT_X_MIN - PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT))) or 
-                                                                         ((h_cntr_reg  > PAD_RIGHT_X_MIN + PAD_WIDTH + PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT ))))) else
-              (others=>'1') when (active = '1' and (((h_cntr_reg  > (FRAME_MIDDLE - PAD_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + PAD_GAP)) and (v_cntr_reg(5) <= '0')))) else
-              ("0000")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
-              ("0000");
+  vga_blue <=   (others=> '0')  when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
+                                                                                      (((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg > FRAME_HEIGHT - BLACK_FRAME_BOT - BLACK_FRAME_WIDTH) and (v_cntr_reg < (FRAME_HEIGHT - BLACK_FRAME_BOT))))))  else   
+                       (others=>'1')   when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= TOP_MENU)) or 
+                                                                                   ((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg >= (FRAME_HEIGHT - BOT_MENU))))) else
+                       (others=>'1')   when (active = '1' and (((h_cntr_reg  < PAD_LEFT_X_MIN - PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT))) or 
+                                                                                   ((h_cntr_reg  > PAD_RIGHT_X_MIN + PAD_WIDTH + PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT ))))) else
+                       (others=>'1')   when (active = '1' and (((h_cntr_reg  > (FRAME_MIDDLE - PAD_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + PAD_GAP)) and (v_cntr_reg(5) <= '0')))) else
+                       ("0000")           when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
+                       ("0000");
               
-  vga_green <=---(others=>'1')         when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (game_over = '1'))) else
-              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (bot_pixel_in_pad = '1'))) else 
-              -- WHITE     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and (top_pixel_in_pad = '1'))) else
-              -- ("0011")     when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1'))) else 
-              -- (others=>'1');
-              (others=>'1') when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= (TOP_MENU - PAD_GAP))) or 
-                                                                         ((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg >= (FRAME_HEIGHT - BOT_MENU +PAD_GAP))))) else
-              (others=>'1') when (active = '1' and (((h_cntr_reg  < PAD_LEFT_X_MIN - PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT))) or 
-                                                                         ((h_cntr_reg  > PAD_RIGHT_X_MIN + PAD_WIDTH + PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT ))))) else
-              (others=>'1') when (active = '1' and (((h_cntr_reg  > (FRAME_MIDDLE - PAD_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + PAD_GAP)) and (v_cntr_reg(5) <= '0')))) else
-              ("1000")      when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
-              ("0000");
+  vga_green <= (others=> '0')   when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
+                                                                                       (((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg > FRAME_HEIGHT - BLACK_FRAME_BOT - BLACK_FRAME_WIDTH) and (v_cntr_reg < (FRAME_HEIGHT - BLACK_FRAME_BOT))))))  else   
+                       (others=>'1')  when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= TOP_MENU)) or 
+                                                                                    ((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg >= (FRAME_HEIGHT - BOT_MENU))))) else
+                        (others=>'1')  when (active = '1' and (((h_cntr_reg  < PAD_LEFT_X_MIN - PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT))) or 
+                                                                                    ((h_cntr_reg  > PAD_RIGHT_X_MIN + PAD_WIDTH + PAD_GAP) and (v_cntr_reg <= (FRAME_HEIGHT ))))) else
+                        (others=>'1')  when (active = '1' and (((h_cntr_reg  > (FRAME_MIDDLE - PAD_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + PAD_GAP)) and (v_cntr_reg(5) <= '0')))) else
+                        ("1000")          when (active = '1' and ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(left_pixel_in_pad = '1') and not(right_pixel_in_pad = '1'))) else
+                        ("0000");
  
  ------------------------------------------------------
  -------         MOVING BOX LOGIC                ------
