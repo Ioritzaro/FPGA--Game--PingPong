@@ -95,38 +95,40 @@ constant V_POL  : std_logic := '1';
 --constant V_POL : std_logic := '1';
 
 -- Color constants
-constant BLACK   : std_logic_vector(3 downto 0) := "0000";
-constant WHITE   : std_logic_vector(3 downto 0) := "1111";
+constant BLACK                    : std_logic_vector(3 downto 0) := "0000";
+constant WHITE                    : std_logic_vector(3 downto 0) := "1111";
+constant PAD_BOX_COLOR   : std_logic_vector(3 downto 0) := "0000";
 
 --Moving Box constants
 constant BOX_TOP_MARGIN    : natural := 100;
 constant BOX_BOT_MARGIN    : natural := 50;
-constant BOX_WIDTH    : natural := 15;
+constant BOX_WIDTH    : natural := 10;
 constant BOX_CLK_DIV  : natural := 1000000; --MAX=(2^25 - 1)
 constant BOX_X_MAX    : natural := (FRAME_WIDTH - BOX_WIDTH);
 constant BOX_Y_MAX    : natural := (FRAME_HEIGHT - BOX_WIDTH - BOX_BOT_MARGIN);
 constant BOX_X_MIN    : natural := 0;
 constant BOX_Y_MIN    : natural := BOX_TOP_MARGIN;
 constant BOX_X_INIT   : std_logic_vector(11 downto 0) := x"019";
-constant BOX_Y_INIT   : std_logic_vector(11 downto 0) := x"200"; --400
+constant BOX_Y_INIT   : std_logic_vector(11 downto 0) := x"200"; --512
 
 -- PADS Constants
 constant PAD_GAP                  : natural := 5;
 constant PAD_WIDTH              : natural := 15;
 constant PAD_HEIGHT             : natural := 170;
 constant PAD_CLK_DIV           : natural := 500000; --MAX=(2^25 - 1)
-constant PAD_LEFT_X_MIN     : natural := 10;
-constant PAD_RIGHT_X_MIN  : natural := 1250;
+constant PAD_X_MARGIN        : natural := 10;
 constant PAD_TOP_Y_MIN      : natural := 10;
 constant PAD_SPEED              : natural := 2;
 constant PAD_TOP_MARGIN    : natural := 100;
 constant PAD_BOT_MARGIN    : natural := 50;
+constant PAD_Y_INIT   : std_logic_vector(11 downto 0) := x"1AB";-- 512-170/2
 
 -- Menu Constants
 constant TOP_MENU : natural := PAD_TOP_MARGIN - PAD_GAP;
 constant BOT_MENU : natural := PAD_BOT_MARGIN - PAD_GAP;
 constant BORDER_MARGIN : natural :=5;
 constant FRAME_MIDDLE : natural := 640;
+constant MIDDLE_GAP : natural := 2;
 constant BLACK_FRAME_TOP   : natural := 88;
 constant BLACK_FRAME_BOT   : natural := 38;
 constant BLACK_FRAME_WIDTH   : natural := 4;
