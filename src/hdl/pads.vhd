@@ -22,6 +22,8 @@ entity pads is
               move_up     : in STD_LOGIC;              
               move_down : in STD_LOGIC;
               pad_mode    : in STD_LOGIC;
+              enable_AI      : in STD_LOGIC;
+              box_y_pos   : in STD_LOGIC_VECTOR (11 downto 0);
               pad_y_reg     : out  STD_LOGIC_VECTOR (11 downto 0));
 end pads;
 
@@ -75,8 +77,15 @@ begin
   process (pxl_clk)
 	begin
     if (rising_edge(pxl_clk)) then
+      -- AI player
+      if ((update_pad = '1') and (enable_AI = '1')) then
+        if(((pad_y + PAD_HALF_HEIGHT) < box_y_pos) and (pad_y < FRAME_HEIGHT - (PAD_HEIGHT + PAD_BOT_MARGIN))) then
+           pad_y <= pad_y + PAD_SPEED;
+        elsif (((pad_y + PAD_HALF_HEIGHT) >= box_y_pos) and (pad_y > PAD_TOP_MARGIN)) then
+          pad_y <= pad_y - PAD_SPEED;
+        end if;      
       -- Slide mode
-      if ((update_pad = '1') and (pad_mode = '1')) then
+      elsif ((update_pad = '1') and (pad_mode = '1')) then
         if ((pad_move_up = '1') and (pad_y < FRAME_HEIGHT - (PAD_HEIGHT + PAD_BOT_MARGIN))) then
           pad_y <= pad_y + PAD_SPEED;
         elsif ((pad_move_up = '0') and (pad_y > PAD_TOP_MARGIN)) then

@@ -115,6 +115,7 @@ constant BOX_Y_INIT   : std_logic_vector(11 downto 0) := x"200"; --512
 constant PAD_GAP                  : natural := 5;
 constant PAD_WIDTH              : natural := 15;
 constant PAD_HEIGHT             : natural := 170;
+constant PAD_HALF_HEIGHT   : natural := 85;
 constant PAD_CLK_DIV           : natural := 500000; --MAX=(2^25 - 1)
 constant PAD_X_MARGIN        : natural := 10;
 constant PAD_TOP_Y_MIN      : natural := 10;
