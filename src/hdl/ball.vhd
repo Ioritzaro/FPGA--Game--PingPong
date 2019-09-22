@@ -38,6 +38,7 @@ signal update_box   : std_logic;
 signal turn_counter  : std_logic_vector(7 downto 0) := x"00";
 signal speed            : std_logic_vector(7 downto 0) := x"02";
 signal update_speed: std_logic_vector(7 downto 0) := x"04";
+signal serve_left_player  : std_logic;
 -- Game signals
 signal game_over                      : std_logic := '0';
 
@@ -75,8 +76,13 @@ begin
           box_y_reg <= box_y_reg - speed;
         end if;
       elsif (update_box = '1' and game_over = '1') then
-        box_x_reg   <=  BOX_X_INIT;
-        box_y_reg   <=  BOX_Y_INIT;
+        if (serve_left_player = '1') then
+            box_x_reg <= BOX_X_INIT;
+            box_y_reg <= left_pad_y_reg + PAD_HALF_HEIGHT;
+        else
+            box_y_reg <= right_pad_y_reg + PAD_HALF_HEIGHT;
+            box_x_reg <= FRAME_WIDTH - BOX_X_INIT - BOX_WIDTH;
+        end if;
       end if;
     end if;
   end process;
@@ -90,9 +96,14 @@ begin
             (box_x_dir = '0' and (box_x_reg < PAD_X_MARGIN +PAD_WIDTH) and (box_y_reg >= left_pad_y_reg) and (box_y_reg <= left_pad_y_reg + PAD_HEIGHT))) then
               box_x_dir <= not(box_x_dir);
               turn_counter <= turn_counter + 1;
-         elsif((box_x_dir = '1' and (box_x_reg > FRAME_WIDTH - PAD_X_MARGIN - PAD_WIDTH)) or (box_x_dir = '0' and (box_x_reg < PAD_X_MARGIN +PAD_WIDTH))) then
+         elsif(box_x_dir = '0' and (box_x_reg < PAD_X_MARGIN +PAD_WIDTH)) then
             game_over <= '1';
             turn_counter <= (others => '0');
+            serve_left_player <= '0';
+        elsif(box_x_dir = '1' and (box_x_reg > FRAME_WIDTH - PAD_X_MARGIN - PAD_WIDTH)) then
+            game_over <= '1';
+            turn_counter <= (others => '0');
+            serve_left_player <= '1';
         elsif(serve = '1') then			
             game_over <= '0';
         end if;
