@@ -14,6 +14,9 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.all;
 
+use ieee.math_real.all;
+
+
 package constants_package is
 
 --Sync Generation constants
@@ -68,13 +71,13 @@ package constants_package is
 constant FRAME_WIDTH  : natural := 1280;
 constant FRAME_HEIGHT : natural := 1024;
 
-constant H_FP   : natural := 48; --H front porch width (pixels)
-constant H_PW   : natural := 112; --H sync pulse width (pixels)
-constant H_MAX  : natural := 1688; --H total period (pixels)
+constant H_FP      : natural := 48; --H front porch width (pixels)
+constant H_PW     : natural := 112; --H sync pulse width (pixels)
+constant H_MAX   : natural := 1688; --H total period (pixels)
 
-constant V_FP   : natural := 1; --V front porch width (lines)
-constant V_PW   : natural := 3; --V sync pulse width (lines)
-constant V_MAX  : natural := 1066; --V total period (lines)
+constant V_FP      : natural := 1; --V front porch width (lines)
+constant V_PW     : natural := 3; --V sync pulse width (lines)
+constant V_MAX   : natural := 1066; --V total period (lines)
 
 constant H_POL  : std_logic := '1';
 constant V_POL  : std_logic := '1';
@@ -102,14 +105,14 @@ constant PAD_BOX_COLOR   : std_logic_vector(3 downto 0) := "0000";
 --Moving Box constants
 constant BOX_TOP_MARGIN    : natural := 100;
 constant BOX_BOT_MARGIN    : natural := 50;
-constant BOX_WIDTH    : natural := 10;
-constant BOX_CLK_DIV  : natural := 1000000; --MAX=(2^25 - 1)
-constant BOX_X_MAX    : natural := (FRAME_WIDTH - BOX_WIDTH);
-constant BOX_Y_MAX    : natural := (FRAME_HEIGHT - BOX_WIDTH - BOX_BOT_MARGIN);
-constant BOX_X_MIN    : natural := 0;
-constant BOX_Y_MIN    : natural := BOX_TOP_MARGIN;
-constant BOX_X_INIT   : std_logic_vector(11 downto 0) := x"019";
-constant BOX_Y_INIT   : std_logic_vector(11 downto 0) := x"200"; --512
+constant BOX_WIDTH              : natural := 10;
+constant BOX_CLK_DIV           : natural := 1000000; --MAX=(2^25 - 1)
+constant BOX_X_MAX             : natural := (FRAME_WIDTH - BOX_WIDTH);
+constant BOX_Y_MAX             : natural := (FRAME_HEIGHT - BOX_WIDTH - BOX_BOT_MARGIN);
+constant BOX_X_MIN              : natural := 0;
+constant BOX_Y_MIN              : natural := BOX_TOP_MARGIN;
+constant BOX_X_INIT             : std_logic_vector(11 downto 0) := x"019";
+constant BOX_Y_INIT             : std_logic_vector(11 downto 0) := x"200"; --512
 
 -- PADS Constants
 constant PAD_GAP                  : natural := 5;
@@ -122,16 +125,20 @@ constant PAD_TOP_Y_MIN      : natural := 10;
 constant PAD_SPEED              : natural := 2;
 constant PAD_TOP_MARGIN    : natural := 100;
 constant PAD_BOT_MARGIN    : natural := 50;
-constant PAD_Y_INIT   : std_logic_vector(11 downto 0) := x"1AB";-- 512-170/2
+constant PAD_Y_INIT               : std_logic_vector(11 downto 0) := x"1AB";-- 512-170/2
 
 -- Menu Constants
-constant TOP_MENU : natural := PAD_TOP_MARGIN - PAD_GAP;
-constant BOT_MENU : natural := PAD_BOT_MARGIN - PAD_GAP;
-constant BORDER_MARGIN : natural :=5;
-constant FRAME_MIDDLE : natural := 640;
-constant MIDDLE_GAP : natural := 2;
+constant TOP_MENU                 : natural := PAD_TOP_MARGIN - PAD_GAP;
+constant BOT_MENU                : natural := PAD_BOT_MARGIN - PAD_GAP;
+constant BORDER_MARGIN      : natural :=5;
+constant FRAME_MIDDLE         : natural := 640;
+constant MIDDLE_GAP             : natural := 2;
 constant BLACK_FRAME_TOP   : natural := 88;
 constant BLACK_FRAME_BOT   : natural := 38;
 constant BLACK_FRAME_WIDTH   : natural := 4;
+
+-- Text Generation
+constant FONT_WIDTH            : integer := 8;
+constant FONT_HEIGHT           : integer := 16;
 
 end package constants_package;

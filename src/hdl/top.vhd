@@ -13,6 +13,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.std_logic_unsigned.all;
+USE ieee.numeric_std.ALL;
+
 library work;
 use work.constants_package.all;
 
@@ -106,6 +108,11 @@ signal left_pad_y_reg                : std_logic_vector(11 downto 0) := PAD_Y_IN
 signal pixel_in_right_pad            : std_logic;
 signal right_pad_y_reg              : std_logic_vector(11 downto 0) := PAD_Y_INIT;
 
+signal d1     : std_logic;
+signal d2     : std_logic;
+signal d3     : std_logic;
+
+
 begin
 
 -- Clock divider   
@@ -117,6 +124,49 @@ port map
     CLK_OUT1 => pxl_clk
   );
 
+  textElement2: entity work.Pixel_On_Text
+        generic map (
+        	displayText => "Player1",
+          resize      => 4
+        )
+        port map(
+        	clk => pxl_clk,
+        	positionX => 40, -- text position.x (top left)
+        	positionY => 20, -- text position.x (top left)
+        	horzCoord => to_integer(unsigned(h_cntr_reg)),
+        	vertCoord => to_integer(unsigned(v_cntr_reg)),
+        	pixel => d2 -- result
+        );
+        
+        
+   textElement1: entity work.Pixel_On_Text
+        generic map (
+        	displayText => "Player2",
+          resize      => 4
+        )
+        port map(
+        	clk => pxl_clk,
+        	positionX => 680, -- text position.x (top left)
+        	positionY => 20, -- text position.x (top left)
+        	horzCoord => to_integer(unsigned(h_cntr_reg)),
+        	vertCoord => to_integer(unsigned(v_cntr_reg)),
+        	pixel => d1 -- result
+        );
+        
+  textElement3: entity work.Pixel_On_Text
+        generic map (
+        	displayText => "IrT Embedded",
+          resize      => 2
+        )
+        port map(
+        	clk => pxl_clk,
+        	positionX => 1050, -- text position.x (top left)
+        	positionY => 990, -- text position.x (top left)
+        	horzCoord => to_integer(unsigned(h_cntr_reg)),
+        	vertCoord => to_integer(unsigned(v_cntr_reg)),
+        	pixel => d3 -- result
+        );
+  
  ------------------------------------------------------
  -------         MOVING BALL LOGIC                ------
  ------------------------------------------------------ 
@@ -194,7 +244,8 @@ port map
     ----------------------------------------------------
   -------         Update RGB values            -------
   ----------------------------------------------------
-  vga_red <=   BLACK      when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
+  vga_red <=  BLACK      when (active = '1' and (d1 = '1' or d2 = '1' or d3 ='1')) else
+                      BLACK      when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
                                                                           (((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg > FRAME_HEIGHT - BLACK_FRAME_BOT - BLACK_FRAME_WIDTH) and (v_cntr_reg < (FRAME_HEIGHT - BLACK_FRAME_BOT)))) or
                                                                           (((h_cntr_reg  > (FRAME_MIDDLE - MIDDLE_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + MIDDLE_GAP)) and (v_cntr_reg<= BLACK_FRAME_TOP) and (v_cntr_reg > BORDER_MARGIN))))) else  
                        WHITE      when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= TOP_MENU )) or 
@@ -205,7 +256,8 @@ port map
                        ("0000")   when (active = '1' and  ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(pixel_in_left_pad = '1') and not(pixel_in_right_pad = '1'))) else
                        PAD_BOX_COLOR;
                 
-  vga_blue <=   BLACK     when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
+  vga_blue <=   BLACK      when (active = '1' and (d1 = '1' or d2 = '1' or d3 ='1')) else
+                        BLACK     when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
                                                                           (((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg > FRAME_HEIGHT - BLACK_FRAME_BOT - BLACK_FRAME_WIDTH) and (v_cntr_reg < (FRAME_HEIGHT - BLACK_FRAME_BOT)))) or
                                                                           (((h_cntr_reg  > (FRAME_MIDDLE - MIDDLE_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + MIDDLE_GAP)) and (v_cntr_reg<= BLACK_FRAME_TOP) and (v_cntr_reg > BORDER_MARGIN))))) else  
                        WHITE      when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= TOP_MENU )) or 
@@ -216,7 +268,8 @@ port map
                        ("0000")   when (active = '1' and  ((h_cntr_reg < FRAME_WIDTH and not(v_cntr_reg < 1)) and not(pixel_in_box = '1') and not(pixel_in_left_pad = '1') and not(pixel_in_right_pad = '1'))) else
                        PAD_BOX_COLOR;
               
-  vga_green <= BLACK     when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
+  vga_green <= BLACK      when (active = '1' and (d1 = '1' or d2 = '1' or d3 ='1')) else
+                         BLACK     when (active = '1' and ((((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg >BLACK_FRAME_TOP) and (v_cntr_reg < (BLACK_FRAME_TOP + BLACK_FRAME_WIDTH)))) or 
                                                                           (((h_cntr_reg  > BORDER_MARGIN) and (h_cntr_reg < FRAME_WIDTH - BORDER_MARGIN ) and (v_cntr_reg > FRAME_HEIGHT - BLACK_FRAME_BOT - BLACK_FRAME_WIDTH) and (v_cntr_reg < (FRAME_HEIGHT - BLACK_FRAME_BOT)))) or
                                                                           (((h_cntr_reg  > (FRAME_MIDDLE - MIDDLE_GAP)) and (h_cntr_reg  < (FRAME_MIDDLE + MIDDLE_GAP)) and (v_cntr_reg<= BLACK_FRAME_TOP) and (v_cntr_reg > BORDER_MARGIN))))) else  
                        WHITE      when (active = '1' and (((h_cntr_reg  < FRAME_WIDTH) and (v_cntr_reg <= TOP_MENU )) or 
