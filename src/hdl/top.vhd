@@ -19,14 +19,15 @@ library work;
 use work.constants_package.all;
 
 entity top is
-  Port (  CLK_I     : in  STD_LOGIC;
+  Port (  CLK_I       : in  STD_LOGIC;
+          SERVO         : out  STD_LOGIC;
           VGA_HS_O  : out  STD_LOGIC;
           VGA_VS_O  : out  STD_LOGIC;		   
-          btn       : in  STD_LOGIC_VECTOR (3 downto 0);
-          sw        : in  STD_LOGIC_VECTOR (3 downto 0);
-          VGA_R     : out  STD_LOGIC_VECTOR (3 downto 0);
-          VGA_B     : out  STD_LOGIC_VECTOR (3 downto 0);
-          VGA_G     : out  STD_LOGIC_VECTOR (3 downto 0));
+          btn              : in  STD_LOGIC_VECTOR (3 downto 0);
+          sw              : in  STD_LOGIC_VECTOR (3 downto 0);
+          VGA_R        : out  STD_LOGIC_VECTOR (3 downto 0);
+          VGA_B       : out  STD_LOGIC_VECTOR (3 downto 0);
+          VGA_G       : out  STD_LOGIC_VECTOR (3 downto 0));
 end top;
 
 architecture Behavioral of top is
@@ -75,8 +76,9 @@ component pads
 end component;
 
 -- Generic signals
-signal pxl_clk  : std_logic;
-signal active   : std_logic;
+signal servo_clk  : std_logic;
+signal pxl_clk      : std_logic;
+signal active       : std_logic;
 
 -- VGA Sync signals
 signal h_cntr_reg : std_logic_vector(11 downto 0) := (others =>'0');
@@ -112,6 +114,7 @@ signal d1     : std_logic;
 signal d2     : std_logic;
 signal d3     : std_logic;
 
+signal cnt    : integer := 0 ;
 
 begin
 
@@ -120,7 +123,7 @@ clk_div_inst : clk_wiz_0
 port map
   (-- Clock in ports
     CLK_IN1 => CLK_I,
-   -- Clock out ports
+   -- Clock out ports   
     CLK_OUT1 => pxl_clk
   );
 
@@ -165,6 +168,25 @@ port map
         	horzCoord => to_integer(unsigned(h_cntr_reg)),
         	vertCoord => to_integer(unsigned(v_cntr_reg)),
         	pixel => d3 -- result
+        );
+  
+  
+  process (pxl_clk) 
+  begin
+    if (rising_edge(pxl_clk)) then
+      cnt <= cnt + 1;
+      if ( cnt = HALF_PERIOD-1 ) then
+        servo_clk <= not servo_clk;
+        cnt <= 0;
+      end if;
+    end if;
+  end process;
+  
+  refere: entity work.servo_ctrl
+        port map(
+        	Clk => servo_clk,
+          box_pos  => box_x_reg,
+          servo => SERVO -- result
         );
   
  ------------------------------------------------------

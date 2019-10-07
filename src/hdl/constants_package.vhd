@@ -141,4 +141,7 @@ constant BLACK_FRAME_WIDTH   : natural := 4;
 constant FONT_WIDTH            : integer := 8;
 constant FONT_HEIGHT           : integer := 16;
 
+-- Servos
+constant HALF_PERIOD           : integer := 500;
+
 end package constants_package;
